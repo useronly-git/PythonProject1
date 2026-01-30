@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заказа</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✅ Оформление заказа</h1>
+            <button onclick="goBack()">← Назад</button>
+        </header>
+
+        <div class="checkout-steps">
+            <div class="step active">1. Контактные данные</div>
+            <div class="step">2. Способ получения</div>
+            <div class="step">3. Подтверждение</div>
+        </div>
+
+        <form id="checkout-form">
+            <div class="form-step active" id="step-1">
+                <h3>Контактные данные</h3>
+
+                <div class="form-group">
+                    <label for="name">Имя:</label>
+                    <input type="text" id="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Телефон:</label>
+                    <input type="tel" id="phone" required pattern="[0-9]{11}">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="save-info">
+                        Сохранить данные для будущих заказов
+                    </label>
+                </div>
+
+                <button type="button" onclick="nextStep()" class="next-btn">Далее</button>
+            </div>
+
+            <div class="form-step" id="step-2">
+                <h3>Способ получения</h3>
+
+                <div class="delivery-options">
+                    <label class="option">
+                        <input type="radio" name="delivery" value="pickup" checked>
+                        <div class="option-content">
+                            <strong>Самовывоз</strong>
+                            <p>ул. Кофейная, 15</p>
+                            <p>⏰ 8:00 - 22:00</p>
+                        </div>
+                    </label>
+
+                    <label class="option" id="delivery-option">
+                        <input type="radio" name="delivery" value="delivery">
+                        <div class="option-content">
+                            <strong>Доставка</strong>
+                            <p>+ 150 ₽ к заказу</p>
+                            <p>🚗 30-60 минут</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div id="delivery-address" style="display: none;">
+                    <div class="form-group">
+                        <label for="address">Адрес доставки:</label>
+                        <textarea id="address" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <h4>Время получения:</h4>
+                    <div class="time-options">
+                        <label>
+                            <input type="radio" name="time" value="asap" checked>
+                            Как можно скорее
+                        </label>
+                        <label>
+                            <input type="radio" name="time" value="scheduled">
+                            Ко времени
+                        </label>
+                    </div>
+
+                    <div id="scheduled-time-input" style="display: none; margin-top: 10px;">
+                        <input type="time" id="order-time">
+                        <p class="note">Заказ будет приготовлен к выбранному времени</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Примечания к заказу:</label>
+                    <textarea id="notes" rows="3" placeholder="Например: без сахара, добавить сироп..."></textarea>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" onclick="prevStep()" class="secondary">Назад</button>
+                    <button type="button" onclick="nextStep()" class="next-btn">Далее</button>
+                </div>
+            </div>
+
+            <div class="form-step" id="step-3">
+                <h3>Подтверждение заказа</h3>
+
+                <div class="order-summary">
+                    <h4>Ваш заказ:</h4>
+                    <div id="order-items">
+                        <!-- Товары будут добавлены через JS -->
+                    </div>
+
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Сумма:</span>
+                            <span id="subtotal">0 ₽</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Доставка:</span>
+                            <span id="delivery-fee">0 ₽</span>
+                        </div>
+                        <div class="total-row total">
+                            <strong>Итого:</strong>
+                            <strong id="final-total">0 ₽</strong>
+                        </div>
+                    </div>
+
+                    <div class="order-info">
+                        <p><strong>Получение:</strong> <span id="delivery-type">Самовывоз</span></p>
+                        <p><strong>Время:</strong> <span id="order-time-display">Как можно скорее</span></p>
+                        <p><strong>Телефон:</strong> <span id="phone-display"></span></p>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Способ оплаты:</h4>
+                    <label class="option">
+                        <input type="radio" name="payment" value="cash" checked>
+                        <div class="option-content">
+                            <strong>Наличными</strong>
+                            <p>При получении</p>
+                        </div>
+                    </label>
+
+                    <label class="option">
+                        <input type="radio" name="payment" value="card">
+                        <div class="option-content">
+                            <strong>Картой онлайн</strong>
+                            <p>Оплата через Telegram</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="step-buttons">
+                    <button type="button" onclick="prevStep()" class="secondary">Назад</button>
+                    <button type="button" onclick="submitOrder()" class="submit-btn">Оформить заказ</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="checkout.js"></script>
+</body>
+</html>

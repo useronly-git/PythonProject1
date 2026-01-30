@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☕ Coffee Bliss - Заказ онлайн</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <!-- Главный контейнер -->
+    <div class="app-container">
+        <!-- Шапка -->
+        <header class="app-header">
+            <div class="header-top">
+                <button class="menu-btn" id="menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">
+                    <i class="fas fa-mug-hot"></i>
+                    <h1>Coffee Bliss</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="cart-btn" id="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Баннер -->
+            <div class="banner">
+                <div class="banner-content">
+                    <h2>Наслаждайтесь идеальным кофе</h2>
+                    <p>Свежая обжарка • Авторские рецепты • Бесплатная доставка от 500₽</p>
+                </div>
+                <div class="banner-badge">
+                    <span class="badge">⭐ 4.9/5</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Боковое меню -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Меню</h3>
+                <button class="close-btn" id="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-category="all">
+                    <i class="fas fa-star"></i>
+                    <span>Все товары</span>
+                </a>
+                <a href="#" class="nav-item" data-category="coffee">
+                    <i class="fas fa-coffee"></i>
+                    <span>Кофе</span>
+                </a>
+                <a href="#" class="nav-item" data-category="tea">
+                    <i class="fas fa-mug-hot"></i>
+                    <span>Чай</span>
+                </a>
+                <a href="#" class="nav-item" data-category="bakery">
+                    <i class="fas fa-bread-slice"></i>
+                    <span>Выпечка</span>
+                </a>
+                <a href="#" class="nav-item" data-category="dessert">
+                    <i class="fas fa-ice-cream"></i>
+                    <span>Десерты</span>
+                </a>
+                <a href="#" class="nav-item" data-category="food">
+                    <i class="fas fa-utensils"></i>
+                    <span>Закуски</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="profile.html" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    <span>Профиль</span>
+                </a>
+                <a href="orders.html" class="nav-item">
+                    <i class="fas fa-history"></i>
+                    <span>Заказы</span>
+                </a>
+                <a href="loyalty.html" class="nav-item">
+                    <i class="fas fa-crown"></i>
+                    <span>Лояльность</span>
+                </a>
+                <a href="#" class="nav-item" id="settings-btn">
+                    <i class="fas fa-cog"></i>
+                    <span>Настройки</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Поиск -->
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Поиск напитков или десертов...">
+                    <button class="clear-search" id="clear-search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="filters">
+                <div class="filter-tags" id="filter-tags">
+                    <button class="filter-tag active" data-filter="all">Все</button>
+                    <button class="filter-tag" data-filter="popular">Популярное</button>
+                    <button class="filter-tag" data-filter="new">Новинки</button>
+                    <button class="filter-tag" data-filter="discount">Со скидкой</button>
+                </div>
+            </div>
+
+            <!-- Сетка товаров -->
+            <div class="products-grid" id="products-grid">
+                <!-- Товары будут загружены через JavaScript -->
+            </div>
+
+            <!-- Кнопка корзины для мобильных -->
+            <div class="floating-cart">
+                <button class="checkout-btn" id="floating-checkout">
+                    <span class="floating-cart-info">
+                        <span id="floating-count">0</span> товаров • <span id="floating-total">0</span>₽
+                    </span>
+                    <span class="checkout-arrow">→</span>
+                </button>
+            </div>
+        </main>
+
+        <!-- Корзина -->
+        <div class="cart-modal" id="cart-modal">
+            <div class="cart-content">
+                <div class="cart-header">
+                    <h3><i class="fas fa-shopping-cart"></i> Ваша корзина</h3>
+                    <button class="close-cart" id="close-cart">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="cart-body" id="cart-body">
+                    <!-- Товары в корзине -->
+                </div>
+
+                <div class="cart-footer">
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Товары:</span>
+                            <span id="cart-subtotal">0₽</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Доставка:</span>
+                            <span id="cart-delivery">0₽</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Итого:</span>
+                            <span id="cart-total">0₽</span>
+                        </div>
+                    </div>
+
+                    <button class="checkout-btn-large" id="checkout-btn">
+                        <span>Перейти к оформлению</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button class="clear-cart-btn" id="clear-cart">
+                        <i class="fas fa-trash"></i>
+                        Очистить корзину
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Уведомления -->
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="main.js"></script>
+</body>
+</html>

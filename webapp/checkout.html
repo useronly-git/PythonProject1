@@ -3,163 +3,990 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оформление заказа</title>
+    <title>☕ Оформление заказа - Coffee Bliss</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Дополнительные стили для оформления заказа */
+        .checkout-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .checkout-header {
+            margin-bottom: 30px;
+        }
+
+        .checkout-header h1 {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .checkout-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--border);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 10px;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-circle {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .checkout-section {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .delivery-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .delivery-option {
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .delivery-option:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .delivery-option.selected {
+            border-color: var(--primary);
+            background: rgba(139, 69, 19, 0.05);
+        }
+
+        .option-radio {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .delivery-option.selected .option-radio::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .option-icon {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .option-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .option-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .option-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .time-options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .time-option {
+            flex: 1;
+        }
+
+        .time-option input[type="radio"] {
+            display: none;
+        }
+
+        .time-option label {
+            display: block;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .time-option input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background: rgba(139, 69, 19, 0.05);
+            font-weight: 600;
+        }
+
+        .scheduled-time {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .scheduled-time.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .time-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border);
+        }
+
+        .time-picker input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        .notes-field {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .order-summary {
+            background: var(--background);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item.total {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 2px solid var(--border);
+        }
+
+        .summary-item.discount {
+            color: var(--success);
+        }
+
+        .loyalty-discount {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--success);
+        }
+
+        .loyalty-info {
+            flex: 1;
+        }
+
+        .loyalty-title {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 5px;
+        }
+
+        .loyalty-desc {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .use-points-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .use-points-btn:hover {
+            background: #219653;
+            transform: scale(1.05);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-method {
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary-light);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary);
+            background: rgba(139, 69, 19, 0.05);
+        }
+
+        .payment-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .payment-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .checkout-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .back-btn {
+            flex: 1;
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--text);
+            padding: 16px;
+            border-radius: var(--radius-lg);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: var(--background);
+            border-color: var(--primary-light);
+        }
+
+        .next-btn, .submit-btn {
+            flex: 2;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .next-btn:hover, .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--success) 0%, #219653 100%);
+        }
+
+        .submit-btn:hover {
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        /* Модальное окно подтверждения */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .confirmation-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            animation: modalSlide 0.3s;
+            text-align: center;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confirmation-icon {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .confirmation-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .confirmation-text {
+            color: var(--text-light);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .confirmation-details {
+            background: var(--background);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .confirmation-actions button {
+            flex: 1;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .checkout-steps {
+                flex-wrap: wrap;
+            }
+
+            .step {
+                flex: 0 0 33.33%;
+                margin-bottom: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .delivery-options {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .back-btn, .next-btn, .submit-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .checkout-container {
+                padding: 15px;
+                padding-bottom: 120px;
+            }
+
+            .checkout-section {
+                padding: 20px;
+            }
+
+            .time-options {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>✅ Оформление заказа</h1>
-            <button onclick="goBack()">← Назад</button>
-        </header>
-
-        <div class="checkout-steps">
-            <div class="step active">1. Контактные данные</div>
-            <div class="step">2. Способ получения</div>
-            <div class="step">3. Подтверждение</div>
+    <div class="checkout-container">
+        <!-- Шапка -->
+        <div class="checkout-header">
+            <button onclick="goBack()" style="background: none; border: none; color: var(--primary); font-size: 18px; margin-bottom: 15px; cursor: pointer;">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+            <h1>Оформление заказа</h1>
+            <p style="color: var(--text-light);">Заполните данные для завершения заказа</p>
         </div>
 
-        <form id="checkout-form">
-            <div class="form-step active" id="step-1">
-                <h3>Контактные данные</h3>
+        <!-- Шаги оформления -->
+        <div class="checkout-steps">
+            <div class="step active" id="step-1-indicator">
+                <div class="step-circle">1</div>
+                <div class="step-label">Контактные данные</div>
+            </div>
+            <div class="step" id="step-2-indicator">
+                <div class="step-circle">2</div>
+                <div class="step-label">Доставка и время</div>
+            </div>
+            <div class="step" id="step-3-indicator">
+                <div class="step-circle">3</div>
+                <div class="step-label">Оплата</div>
+            </div>
+            <div class="step" id="step-4-indicator">
+                <div class="step-circle">4</div>
+                <div class="step-label">Подтверждение</div>
+            </div>
+        </div>
 
+        <!-- Секция 1: Контактные данные -->
+        <div class="checkout-section" id="section-1">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="section-title">Контактные данные</div>
+                    <div style="font-size: 14px; color: var(--text-light);">Заполните информацию для связи</div>
+                </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="name">Имя:</label>
-                    <input type="text" id="name" required>
+                    <label class="form-label">Имя *</label>
+                    <input type="text" class="form-control" id="name" placeholder="Ваше имя" required>
+                    <div class="error-message" id="name-error">Пожалуйста, введите ваше имя</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Телефон:</label>
-                    <input type="tel" id="phone" required pattern="[0-9]{11}">
+                    <label class="form-label">Фамилия</label>
+                    <input type="text" class="form-control" id="last-name" placeholder="Ваша фамилия">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Телефон *</label>
+                    <input type="tel" class="form-control" id="phone" placeholder="+7 (999) 123-45-67" required>
+                    <div class="error-message" id="phone-error">Введите корректный номер телефона</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" placeholder="email@example.com">
+                    <div class="error-message" id="email-error">Введите корректный email</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="save-info" checked>
+                    Сохранить данные для будущих заказов
+                </label>
+            </div>
+        </div>
+
+        <!-- Секция 2: Доставка и время -->
+        <div class="checkout-section" id="section-2" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div>
+                    <div class="section-title">Доставка и время</div>
+                    <div style="font-size: 14px; color: var(--text-light);">Выберите способ получения и время</div>
+                </div>
+            </div>
+
+            <!-- Способ получения -->
+            <h3 style="margin-bottom: 15px; color: var(--text);">Способ получения</h3>
+            <div class="delivery-options">
+                <div class="delivery-option selected" data-type="pickup">
+                    <div class="option-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="option-title">Самовывоз</div>
+                    <div class="option-desc">Заберите заказ в кофейне</div>
+                    <div class="option-price">Бесплатно</div>
+                    <div class="option-radio"></div>
+                </div>
+
+                <div class="delivery-option" data-type="delivery">
+                    <div class="option-icon">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+                    <div class="option-title">Доставка</div>
+                    <div class="option-desc">Курьером до двери</div>
+                    <div class="option-price" id="delivery-price">150₽</div>
+                    <div class="option-radio"></div>
+                </div>
+            </div>
+
+            <!-- Адрес доставки (только для доставки) -->
+            <div class="form-group" id="address-field" style="display: none;">
+                <label class="form-label">Адрес доставки *</label>
+                <textarea class="form-control" id="address" placeholder="Улица, дом, квартира" rows="3"></textarea>
+                <div class="error-message" id="address-error">Пожалуйста, укажите адрес доставки</div>
+            </div>
+
+            <!-- Время получения -->
+            <h3 style="margin: 25px 0 15px; color: var(--text);">Время получения</h3>
+            <div class="time-options">
+                <div class="time-option">
+                    <input type="radio" name="time" id="time-asap" value="asap" checked>
+                    <label for="time-asap">
+                        <i class="fas fa-bolt" style="display: block; margin-bottom: 5px;"></i>
+                        Как можно скорее
+                    </label>
+                </div>
+
+                <div class="time-option">
+                    <input type="radio" name="time" id="time-scheduled" value="scheduled">
+                    <label for="time-scheduled">
+                        <i class="fas fa-clock" style="display: block; margin-bottom: 5px;"></i>
+                        Ко времени
+                    </label>
+                </div>
+            </div>
+
+            <!-- Выбор времени (только для scheduled) -->
+            <div class="scheduled-time" id="scheduled-time-input">
+                <div class="form-group">
+                    <label class="form-label">Выберите время *</label>
+                    <div class="time-picker">
+                        <input type="time" id="order-time" min="08:00" max="22:00" required>
+                        <i class="fas fa-clock" style="color: var(--primary);"></i>
+                    </div>
+                    <div style="font-size: 14px; color: var(--text-light); margin-top: 5px;">
+                        Время работы: 08:00 - 22:00
+                    </div>
+                    <div class="error-message" id="time-error">Выберите время в пределах работы кофейни</div>
+                </div>
+            </div>
+
+            <!-- Примечания к заказу -->
+            <div class="form-group">
+                <label class="form-label">Примечания к заказу</label>
+                <textarea class="form-control notes-field" id="notes" placeholder="Например: без сахара, добавить сироп, дополнительные пакеты..."></textarea>
+            </div>
+        </div>
+
+        <!-- Секция 3: Оплата -->
+        <div class="checkout-section" id="section-3" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div>
+                    <div class="section-title">Оплата</div>
+                    <div style="font-size: 14px; color: var(--text-light);">Выберите способ оплаты</div>
+                </div>
+            </div>
+
+            <!-- Способы оплаты -->
+            <div class="payment-methods">
+                <div class="payment-method selected" data-method="cash">
+                    <div class="payment-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="payment-name">Наличными</div>
+                    <div style="font-size: 14px; color: var(--text-light);">При получении</div>
+                </div>
+
+                <div class="payment-method" data-method="card">
+                    <div class="payment-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="payment-name">Картой онлайн</div>
+                    <div style="font-size: 14px; color: var(--text-light);">Оплата через Telegram</div>
+                </div>
+
+                <div class="payment-method" data-method="card_courier">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">Картой курьеру</div>
+                    <div style="font-size: 14px; color: var(--text-light);">При получении</div>
+                </div>
+            </div>
+
+            <!-- Информация о платеже -->
+            <div style="background: var(--background); padding: 20px; border-radius: var(--radius-md); margin-top: 20px;">
+                <h4 style="margin-bottom: 15px; color: var(--text);">Информация о платеже</h4>
+
+                <div class="form-group">
+                    <label class="form-label">Получатель</label>
+                    <input type="text" class="form-control" value="ООО 'Coffee Bliss'" readonly style="background: white;">
+                </div>
+
+                <div style="font-size: 14px; color: var(--text-light); margin-top: 15px;">
+                    <i class="fas fa-shield-alt" style="color: var(--success); margin-right: 5px;"></i>
+                    Все платежи защищены и обрабатываются безопасно
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция 4: Подтверждение -->
+        <div class="checkout-section" id="section-4" style="display: none;">
+            <div class="section-header">
+                <div class="section-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <div class="section-title">Подтверждение заказа</div>
+                    <div style="font-size: 14px; color: var(--text-light);">Проверьте информацию перед оформлением</div>
+                </div>
+            </div>
+
+            <!-- Сводка заказа -->
+            <h3 style="margin-bottom: 15px; color: var(--text);">Ваш заказ</h3>
+            <div class="order-summary">
+                <div id="order-items-summary">
+                    <!-- Товары будут добавлены через JS -->
+                </div>
+
+                <div class="summary-item">
+                    <span>Товары:</span>
+                    <span id="summary-subtotal">0₽</span>
+                </div>
+
+                <div class="summary-item">
+                    <span>Доставка:</span>
+                    <span id="summary-delivery">0₽</span>
+                </div>
+
+                <!-- Скидка по программе лояльности -->
+                <div class="loyalty-discount" id="loyalty-discount" style="display: none;">
+                    <div class="loyalty-info">
+                        <div class="loyalty-title">Скидка по программе лояльности</div>
+                        <div class="loyalty-desc" id="loyalty-desc">Использовано баллов: 0</div>
+                    </div>
+                    <button class="use-points-btn" onclick="changeLoyaltyPoints()">
+                        Изменить
+                    </button>
+                </div>
+
+                <div class="summary-item discount" id="discount-row" style="display: none;">
+                    <span>Скидка:</span>
+                    <span id="summary-discount">-0₽</span>
+                </div>
+
+                <div class="summary-item total">
+                    <span>Итого к оплате:</span>
+                    <span id="summary-total">0₽</span>
+                </div>
+            </div>
+
+            <!-- Информация о заказе -->
+            <h3 style="margin: 25px 0 15px; color: var(--text);">Информация о заказе</h3>
+            <div style="background: var(--background); padding: 20px; border-radius: var(--radius-md);">
+                <div class="detail-row">
+                    <span style="color: var(--text-light);">Получение:</span>
+                    <span id="order-delivery-type">Самовывоз</span>
+                </div>
+                <div class="detail-row">
+                    <span style="color: var(--text-light);">Адрес:</span>
+                    <span id="order-address">ул. Кофейная, 15</span>
+                </div>
+                <div class="detail-row">
+                    <span style="color: var(--text-light);">Время:</span>
+                    <span id="order-time-display">Как можно скорее</span>
+                </div>
+                <div class="detail-row">
+                    <span style="color: var(--text-light);">Оплата:</span>
+                    <span id="order-payment">Наличными</span>
+                </div>
+                <div class="detail-row">
+                    <span style="color: var(--text-light);">Телефон:</span>
+                    <span id="order-phone">не указан</span>
+                </div>
+            </div>
+
+            <!-- Соглашения -->
+            <div style="margin-top: 25px; padding: 20px; background: rgba(52, 152, 219, 0.05); border-radius: var(--radius-md); border-left: 4px solid var(--secondary);">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="agree-terms" required>
+                        Я соглашаюсь с <a href="#" style="color: var(--primary); text-decoration: none;">условиями обработки персональных данных</a>
+                    </label>
+                    <div class="error-message" id="terms-error">Необходимо согласие с условиями</div>
                 </div>
 
                 <div class="form-group">
                     <label>
-                        <input type="checkbox" id="save-info">
-                        Сохранить данные для будущих заказов
+                        <input type="checkbox" id="agree-rules" required>
+                        Я ознакомлен с <a href="#" style="color: var(--primary); text-decoration: none;">правилами возврата</a>
                     </label>
-                </div>
-
-                <button type="button" onclick="nextStep()" class="next-btn">Далее</button>
-            </div>
-
-            <div class="form-step" id="step-2">
-                <h3>Способ получения</h3>
-
-                <div class="delivery-options">
-                    <label class="option">
-                        <input type="radio" name="delivery" value="pickup" checked>
-                        <div class="option-content">
-                            <strong>Самовывоз</strong>
-                            <p>ул. Кофейная, 15</p>
-                            <p>⏰ 8:00 - 22:00</p>
-                        </div>
-                    </label>
-
-                    <label class="option" id="delivery-option">
-                        <input type="radio" name="delivery" value="delivery">
-                        <div class="option-content">
-                            <strong>Доставка</strong>
-                            <p>+ 150 ₽ к заказу</p>
-                            <p>🚗 30-60 минут</p>
-                        </div>
-                    </label>
-                </div>
-
-                <div id="delivery-address" style="display: none;">
-                    <div class="form-group">
-                        <label for="address">Адрес доставки:</label>
-                        <textarea id="address" rows="3"></textarea>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <h4>Время получения:</h4>
-                    <div class="time-options">
-                        <label>
-                            <input type="radio" name="time" value="asap" checked>
-                            Как можно скорее
-                        </label>
-                        <label>
-                            <input type="radio" name="time" value="scheduled">
-                            Ко времени
-                        </label>
-                    </div>
-
-                    <div id="scheduled-time-input" style="display: none; margin-top: 10px;">
-                        <input type="time" id="order-time">
-                        <p class="note">Заказ будет приготовлен к выбранному времени</p>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="notes">Примечания к заказу:</label>
-                    <textarea id="notes" rows="3" placeholder="Например: без сахара, добавить сироп..."></textarea>
-                </div>
-
-                <div class="step-buttons">
-                    <button type="button" onclick="prevStep()" class="secondary">Назад</button>
-                    <button type="button" onclick="nextStep()" class="next-btn">Далее</button>
+                    <div class="error-message" id="rules-error">Необходимо согласие с правилами</div>
                 </div>
             </div>
+        </div>
 
-            <div class="form-step" id="step-3">
-                <h3>Подтверждение заказа</h3>
+        <!-- Кнопки навигации -->
+        <div class="checkout-actions">
+            <div class="action-buttons">
+                <button class="back-btn" id="back-btn" onclick="prevStep()" style="display: none;">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад
+                </button>
+                <button class="next-btn" id="next-btn" onclick="nextStep()">
+                    Далее
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="submit-btn" id="submit-btn" onclick="submitOrder()" style="display: none;">
+                    <i class="fas fa-check"></i>
+                    Оформить заказ
+                </button>
+            </div>
+        </div>
 
-                <div class="order-summary">
-                    <h4>Ваш заказ:</h4>
-                    <div id="order-items">
-                        <!-- Товары будут добавлены через JS -->
+        <!-- Модальное окно подтверждения -->
+        <div class="confirmation-modal" id="confirmation-modal">
+            <div class="confirmation-content">
+                <div class="confirmation-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="confirmation-title">Заказ оформлен!</div>
+                <div class="confirmation-text">
+                    Ваш заказ успешно принят и передан на обработку.
+                    В ближайшее время с вами свяжется наш сотрудник для подтверждения.
+                </div>
+
+                <div class="confirmation-details">
+                    <div class="detail-row">
+                        <span>Номер заказа:</span>
+                        <strong id="confirmation-number">#00000</strong>
                     </div>
-
-                    <div class="order-totals">
-                        <div class="total-row">
-                            <span>Сумма:</span>
-                            <span id="subtotal">0 ₽</span>
-                        </div>
-                        <div class="total-row">
-                            <span>Доставка:</span>
-                            <span id="delivery-fee">0 ₽</span>
-                        </div>
-                        <div class="total-row total">
-                            <strong>Итого:</strong>
-                            <strong id="final-total">0 ₽</strong>
-                        </div>
+                    <div class="detail-row">
+                        <span>Сумма:</span>
+                        <strong id="confirmation-total">0₽</strong>
                     </div>
-
-                    <div class="order-info">
-                        <p><strong>Получение:</strong> <span id="delivery-type">Самовывоз</span></p>
-                        <p><strong>Время:</strong> <span id="order-time-display">Как можно скорее</span></p>
-                        <p><strong>Телефон:</strong> <span id="phone-display"></span></p>
+                    <div class="detail-row">
+                        <span>Статус:</span>
+                        <span style="color: var(--warning);">Обрабатывается</span>
                     </div>
                 </div>
 
-                <div class="payment-methods">
-                    <h4>Способ оплаты:</h4>
-                    <label class="option">
-                        <input type="radio" name="payment" value="cash" checked>
-                        <div class="option-content">
-                            <strong>Наличными</strong>
-                            <p>При получении</p>
-                        </div>
-                    </label>
-
-                    <label class="option">
-                        <input type="radio" name="payment" value="card">
-                        <div class="option-content">
-                            <strong>Картой онлайн</strong>
-                            <p>Оплата через Telegram</p>
-                        </div>
-                    </label>
-                </div>
-
-                <div class="step-buttons">
-                    <button type="button" onclick="prevStep()" class="secondary">Назад</button>
-                    <button type="button" onclick="submitOrder()" class="submit-btn">Оформить заказ</button>
+                <div class="confirmation-actions">
+                    <button class="back-btn" onclick="goToMain()">
+                        <i class="fas fa-home"></i>
+                        На главную
+                    </button>
+                    <button class="next-btn" onclick="viewOrder()">
+                        <i class="fas fa-eye"></i>
+                        Посмотреть заказ
+                    </button>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 
     <script src="checkout.js"></script>

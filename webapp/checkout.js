@@ -675,3 +675,369 @@ tg.BackButton.onClick(goBack);
 if (currentStep > 1) {
     tg.BackButton.show();
 }
+
+// Дополнительные функции для оформления заказа
+
+// Форматирование телефона
+function formatPhoneNumber(phone) {
+    const cleaned = phone.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{1})(\d{3})(\d{3})(\d{2})(\d{2})$/);
+    if (match) {
+        return `+${match[1]} (${match[2]}) ${match[3]}-${match[4]}-${match[5]}`;
+    }
+    return phone;
+}
+
+// Автоформатирование телефона
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+
+    if (value.startsWith('7') || value.startsWith('8')) {
+        value = '7' + value.substring(1);
+    } else if (!value.startsWith('7')) {
+        value = '7' + value;
+    }
+
+    if (value.length > 11) {
+        value = value.substring(0, 11);
+    }
+
+    let formatted = '';
+    if (value.length > 0) {
+        formatted = '+7';
+        if (value.length > 1) {
+            formatted += ' (' + value.substring(1, 4);
+        }
+        if (value.length > 4) {
+            formatted += ') ' + value.substring(4, 7);
+        }
+        if (value.length > 7) {
+            formatted += '-' + value.substring(7, 9);
+        }
+        if (value.length > 9) {
+            formatted += '-' + value.substring(9, 11);
+        }
+    }
+
+    e.target.value = formatted;
+    orderData.contact.phone = value;
+});
+
+// Проверка минимального заказа
+function checkMinOrder() {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const minOrder = 300; // Минимальный заказ
+
+    if (subtotal < minOrder) {
+        const missing = minOrder - subtotal;
+        showNotification(`Минимальная сумма заказа ${minOrder}₽. Добавьте товаров на ${missing}₽`, 'warning');
+        return false;
+    }
+
+    return true;
+}
+
+// Проверка времени работы
+function checkWorkingHours() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+
+    // Время работы: 8:00 - 22:00
+    if (hours < 8 || (hours === 22 && minutes > 0) || hours >= 23) {
+        if (orderData.delivery.timeType === 'asap') {
+            showNotification('Кофейня сейчас закрыта. Время работы: 08:00 - 22:00. Выберите время на завтра.', 'warning');
+
+            // Автоматически переключаем на заказ ко времени
+            document.getElementById('time-scheduled').checked = true;
+            setTimeType('scheduled');
+
+            // Устанавливаем время на завтра 10:00
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(10, 0, 0, 0);
+
+            const timeString = tomorrow.getHours().toString().padStart(2, '0') + ':' +
+                              tomorrow.getMinutes().toString().padStart(2, '0');
+            document.getElementById('order-time').value = timeString;
+            orderData.delivery.scheduledTime = timeString;
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Показать уведомление
+function showNotification(message, type = 'info') {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+
+    // Стили для уведомления
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? 'var(--success)' : type === 'warning' ? 'var(--warning)' : 'var(--secondary)'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        z-index: 10000;
+        animation: slideInRight 0.3s, slideOutRight 0.3s 2.7s;
+        max-width: 300px;
+    `;
+
+    // Добавляем стили анимации
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Добавляем уведомление на страницу
+    document.body.appendChild(notification);
+
+    // Удаляем через 3 секунды
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Расчет времени доставки
+function calculateDeliveryTime() {
+    const now = new Date();
+    const hours = now.getHours();
+
+    // Время приготовления: 15-25 минут
+    const prepTime = 20; // минут
+
+    // Если заказ ко времени
+    if (orderData.delivery.timeType === 'scheduled' && orderData.delivery.scheduledTime) {
+        const [orderHours, orderMinutes] = orderData.delivery.scheduledTime.split(':').map(Number);
+        const orderTime = new Date();
+        orderTime.setHours(orderHours, orderMinutes, 0, 0);
+
+        return orderTime;
+    }
+
+    // Если как можно скорее
+    const deliveryTime = new Date(now.getTime() + prepTime * 60000);
+
+    // Проверяем время работы
+    if (deliveryTime.getHours() >= 22) {
+        // Если доставка выходит за время работы, переносим на завтра
+        deliveryTime.setDate(deliveryTime.getDate() + 1);
+        deliveryTime.setHours(8, 0, 0, 0);
+
+        showNotification('Доставка будет осуществлена завтра с 8:00', 'info');
+    }
+
+    return deliveryTime;
+}
+
+// Сохранение черновика заказа
+function saveDraft() {
+    const draft = {
+        contact: orderData.contact,
+        delivery: orderData.delivery,
+        payment: orderData.payment,
+        loyalty: orderData.loyalty,
+        notes: orderData.notes,
+        cart: cart,
+        timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('orderDraft', JSON.stringify(draft));
+}
+
+// Загрузка черновика заказа
+function loadDraft() {
+    const draft = JSON.parse(localStorage.getItem('orderDraft'));
+    if (draft) {
+        // Проверяем не устарел ли черновик (старше 1 часа)
+        const draftTime = new Date(draft.timestamp);
+        const now = new Date();
+        const hoursDiff = (now - draftTime) / (1000 * 60 * 60);
+
+        if (hoursDiff < 1) { // Черновик не старше 1 часа
+            orderData.contact = draft.contact || {};
+            orderData.delivery = draft.delivery || { type: 'pickup', timeType: 'asap' };
+            orderData.payment = draft.payment || { method: 'cash' };
+            orderData.loyalty = draft.loyalty || { usePoints: false, pointsUsed: 0, discount: 0 };
+            orderData.notes = draft.notes || '';
+
+            // Обновляем UI
+            if (orderData.contact.name) {
+                document.getElementById('name').value = orderData.contact.name;
+            }
+            if (orderData.contact.phone) {
+                document.getElementById('phone').value = orderData.contact.phone;
+            }
+            if (orderData.contact.email) {
+                document.getElementById('email').value = orderData.contact.email;
+            }
+
+            setDeliveryType(orderData.delivery.type);
+            setTimeType(orderData.delivery.timeType);
+            setPaymentMethod(orderData.payment.method);
+
+            return true;
+        } else {
+            // Удаляем устаревший черновик
+            localStorage.removeItem('orderDraft');
+        }
+    }
+
+    return false;
+}
+
+// Автосохранение черновика каждые 30 секунд
+setInterval(saveDraft, 30000);
+
+// Загружаем черновик при старте
+window.addEventListener('load', function() {
+    if (loadDraft()) {
+        showNotification('Загружен последний черновик заказа', 'info');
+    }
+});
+
+// Обработка изменения способа оплаты "Картой онлайн"
+document.querySelector('.payment-method[data-method="card"]').addEventListener('click', function() {
+    if (orderData.delivery.type === 'pickup') {
+        showNotification('Оплата картой онлайн доступна только при доставке', 'warning');
+        setPaymentMethod('cash');
+    }
+});
+
+// Проверка перед переходом к оплате
+const originalNextStep = window.nextStep;
+window.nextStep = function() {
+    if (currentStep === 2) {
+        // Проверяем минимальный заказ
+        if (!checkMinOrder()) {
+            return;
+        }
+
+        // Проверяем время работы
+        if (!checkWorkingHours()) {
+            return;
+        }
+
+        // Если выбран самовывоз и оплата картой онлайн
+        if (orderData.delivery.type === 'pickup' && orderData.payment.method === 'card') {
+            showNotification('Оплата картой онлайн доступна только при доставке', 'warning');
+            setPaymentMethod('cash');
+        }
+    }
+
+    originalNextStep();
+};
+
+// Обновление времени в реальном времени
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.getHours().toString().padStart(2, '0') + ':' +
+                      now.getMinutes().toString().padStart(2, '0');
+
+    const timeElements = document.querySelectorAll('.current-time');
+    timeElements.forEach(el => {
+        if (el.querySelector('span')) {
+            el.querySelector('span').textContent = timeString;
+        }
+    });
+}
+
+// Обновляем время каждую минуту
+setInterval(updateCurrentTime, 60000);
+updateCurrentTime();
+
+// Обработка специальных предложений
+function applyPromoCode() {
+    const promoCode = prompt('Введите промокод:');
+    if (promoCode) {
+        // Здесь можно добавить проверку промокодов
+        const validPromoCodes = {
+            'WELCOME10': { discount: 10, type: 'percent' },
+            'COFFEE20': { discount: 20, type: 'percent' },
+            'SUMMER100': { discount: 100, type: 'fixed' }
+        };
+
+        if (validPromoCodes[promoCode.toUpperCase()]) {
+            const promo = validPromoCodes[promoCode.toUpperCase()];
+            showNotification(`Промокод применен! Скидка ${promo.discount}${promo.type === 'percent' ? '%' : '₽'}`, 'success');
+
+            // Добавляем логику применения скидки
+            // ...
+        } else {
+            showNotification('Промокод недействителен', 'error');
+        }
+    }
+}
+
+// Добавляем кнопку промокода
+const promoButton = document.createElement('button');
+promoButton.innerHTML = '<i class="fas fa-tag"></i> Промокод';
+promoButton.style.cssText = `
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: var(--secondary);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s;
+`;
+promoButton.addEventListener('mouseenter', () => {
+    promoButton.style.transform = 'scale(1.1)';
+    promoButton.style.boxShadow = 'var(--shadow-lg)';
+});
+promoButton.addEventListener('mouseleave', () => {
+    promoButton.style.transform = 'scale(1)';
+    promoButton.style.boxShadow = 'var(--shadow-md)';
+});
+promoButton.addEventListener('click', applyPromoCode);
+document.body.appendChild(promoButton);
+
+// Показываем кнопку только на шагах 2-4
+function updatePromoButtonVisibility() {
+    if (currentStep >= 2 && currentStep <= 4) {
+        promoButton.style.display = 'flex';
+    } else {
+        promoButton.style.display = 'none';
+    }
+}
+
+// Обновляем видимость кнопки при смене шага
+const originalUpdateSteps = updateSteps;
+updateSteps = function() {
+    originalUpdateSteps();
+    updatePromoButtonVisibility();
+};
+updatePromoButtonVisibility();
